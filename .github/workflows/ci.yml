@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-structure:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check project structure
+      run: |
+        echo "Checking project structure..."
+        if [ ! -f "index.html" ]; then
+          echo "Error: index.html not found"
+          exit 1
+        fi
+        if [ ! -f "style.css" ]; then
+          echo "Error: style.css not found"
+          exit 1
+        fi
+        if [ ! -f "script.js" ]; then
+          echo "Error: script.js not found"
+          exit 1
+        fi
+        if [ ! -f ".gitignore" ]; then
+          echo "Error: .gitignore not found"
+          exit 1
+        fi
+        echo "All required files are present!"
