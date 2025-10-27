@@ -1,24 +1,58 @@
-function addTask() {
-  const taskInput = document.getElementById('taskInput');
-  const taskText = taskInput.value.trim();
+// Initialize task list from localStorage
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-  // Валидация — проверяем, что поле не пустое
-  if (taskText === "") {
-    alert('Введите текст задачи!');
+// Add task function
+function addTask(taskName) {
+  if (taskName.trim() === '') {
     return;
   }
-
-  // Создаем новый элемент списка
-  const taskList = document.getElementById('taskList');
-  const li = document.createElement('li');
-  li.innerHTML = `
-    <span>${taskText}</span>
-    <button onclick="this.parentElement.remove()">Удалить</button>
-  `;
-  taskList.appendChild(li);
-
-  // Очищаем поле ввода и возвращаем фокус
-  taskInput.value = "";
-  taskInput.focus();
+  
+  const task = {
+    id: Date.now(),
+    name: taskName,
+    completed: false
+  };
+  
+  tasks.push(task);
+  saveTasks();
+  renderTasks();
 }
 
+// Save tasks to localStorage
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Render tasks to the DOM
+function renderTasks() {
+  const taskList = document.getElementById('task-list');
+  if (!taskList) return;
+  
+  taskList.innerHTML = '';
+  
+  tasks.forEach(task => {
+    const li = document.createElement('li');
+    li.textContent = task.name;
+    if (task.completed) {
+      li.style.textDecoration = 'line-through';
+      li.style.opacity = '0.6';
+    }
+    taskList.appendChild(li);
+  });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  renderTasks();
+  
+  const taskForm = document.getElementById('task-form');
+  const taskInput = document.getElementById('task-input');
+  
+  if (taskForm) {
+    taskForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      addTask(taskInput.value);
+      taskInput.value = '';
+    });
+  }
+});
