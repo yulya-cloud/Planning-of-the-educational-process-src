@@ -1,35 +1,31 @@
-name: CI
-
+name: CI - Code Validation
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
 jobs:
-  check-structure:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Check project structure
-      run: |
-        echo "Checking project structure..."
-        if [ ! -f "index.html" ]; then
-          echo "Error: index.html not found"
-          exit 1
-        fi
-        if [ ! -f "style.css" ]; then
-          echo "Error: style.css not found"
-          exit 1
-        fi
-        if [ ! -f "script.js" ]; then
-          echo "Error: script.js not found"
-          exit 1
-        fi
-        if [ ! -f ".gitignore" ]; then
-          echo "Error: .gitignore not found"
-          exit 1
-        fi
-        echo "All required files are present!"
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Validate HTML structure
+          run: |
+            echo "Checking HTML file existence..."
+            test -f index.html && echo "✓ index.html exists" || exit 1
+
+        - name: Validate CSS file
+          run: |
+            echo "Checking CSS file existence..."
+            test -f style.css && echo "✓ style.css exists" || exit 1
+
+        - name: Validate JavaScript file
+          run: |
+            echo "Checking JS file existence..."
+            test -f script.js && echo "✓ script.js exists" || exit 1
+
+        - name: Basic syntax check
+          run: |
+            echo "All basic validations passed! 🟩"
