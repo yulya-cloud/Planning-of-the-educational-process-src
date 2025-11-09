@@ -7,7 +7,7 @@ function addTask() {
         alert("Введите текст рецепта!");
         return;
     }
-
+    
     // Создаем новый элемент списка
     const taskList = document.getElementById('taskList');
     const li = document.createElement('li');
