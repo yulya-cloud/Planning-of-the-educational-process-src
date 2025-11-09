@@ -1,23 +1,33 @@
-function addTask() {
-    const taskInput = document.getElementById('taskInput');
-    const taskText = taskInput.value.trim();
+function addReminder() {
+    const reminderInput = document.getElementById('reminderInput');
+    const reminderText = reminderInput.value.trim();
 
-    // Валидация - проверяем, что поле не пустое
-    if (taskText === '') {
-        alert("Введите вашу задачу!");
+    // Проверяем, что поле не пустое
+    if (reminderText === '') {
+        alert("Введите текст напоминания!");
         return;
     }
 
-    // Создаем новый элемент списка
-    const taskList = document.getElementById('taskList');
+    // Создаем элемент списка
+    const reminderList = document.getElementById('reminderList');
     const li = document.createElement('li');
     li.innerHTML = `
-        <span>${taskText}</span>
-        <button onclick="this.parentElement.remove()">Удалить</button>
+        <span>${reminderText}</span>
+        <div>
+            <button onclick="markDone(this)">✅</button>
+            <button onclick="this.parentElement.parentElement.remove()">🗑️</button>
+        </div>
     `;
-    taskList.appendChild(li);
 
-    // Очищаем поле ввода и возвращаем фокус
-    taskInput.value = '';
-    taskInput.focus();
-} 
+    reminderList.appendChild(li);
+
+    // Очищаем поле ввода
+    reminderInput.value = '';
+    reminderInput.focus();
+}
+
+function markDone(button) {
+    const li = button.closest('li');
+    li.querySelector('span').style.textDecoration = 'line-through';
+    li.querySelector('span').style.color = '#777';
+}
