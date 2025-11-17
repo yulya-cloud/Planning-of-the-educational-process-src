@@ -81,5 +81,5 @@ Tasks(task_id, title, description, due_date, priority, status, user_id, username
 - Индекс на due_date для быстрого поиска ближайших дедлайнов
 - Индексы на часто используемых полях фильтрации (status, priority)
 
-# [ER-диаграмма](/docs/database/er_diagram.png)
+# [ER-диаграмма](/docs/er_diagram.png)
 # [Схема нормализации](/database/schema.sql)
