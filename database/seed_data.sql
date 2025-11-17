@@ -1,88 +1,65 @@
--- database/schema.sql
-CREATE TABLE Users (
-    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    role TEXT CHECK(role IN ('student', 'teacher')) NOT NULL,
-    created_at TEXT DEFAULT (datetime('now'))
-);
+-- Тестовые данные для приложения "Планирование учебного процесса"
 
-CREATE TABLE Subjects (
-    subject_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
-);
+-- Добавляем тестовых пользователей
+INSERT INTO Users (username, email, role) VALUES 
+('ivanov_student', 'ivanov@university.ru', 'student'),
+('petrova_student', 'petrova@university.ru', 'student'),
+('sidorov_teacher', 'sidorov@university.ru', 'teacher'),
+('kozlov_teacher', 'kozlov@university.ru', 'teacher');
 
-CREATE TABLE Lessons (
-    lesson_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    datetime TEXT NOT NULL,
-    room TEXT,
-    subject_id INTEGER NOT NULL,
-    teacher_id INTEGER NOT NULL,
-    FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id),
-    FOREIGN KEY (teacher_id) REFERENCES Users(user_id)
-);
+-- Добавляем дисциплины
+INSERT INTO Subjects (name, description, credits) VALUES 
+('Математика', 'Высшая математика и математический анализ', 6),
+('Программирование', 'Основы программирования и алгоритмы', 5),
+('Базы данных', 'Проектирование и работа с базами данных', 4),
+('Физика', 'Общая физика и механика', 5);
 
-CREATE TABLE Assignments (
-    assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    due_date TEXT NOT NULL,
-    priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
-    status TEXT CHECK(status IN ('pending', 'in progress', 'completed', 'overdue')) DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    user_id INTEGER NOT NULL,
-    subject_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id)
-);
+-- Добавляем занятия
+INSERT INTO Lessons (title, description, datetime, room, lesson_type, subject_id, teacher_id) VALUES 
+('Лекция по математике', 'Введение в математический анализ', '2024-12-10 09:00:00', 'А-101', 'lecture', 1, 3),
+('Практика по программированию', 'Решение задач на Python', '2024-12-11 11:00:00', 'Б-205', 'practice', 2, 4),
+('Лабораторная по базам данных', 'Создание ER-диаграмм', '2024-12-12 13:00:00', 'В-301', 'lab', 3, 3),
+('Лекция по физике', 'Законы Ньютона', '2024-12-13 15:00:00', 'А-102', 'lecture', 4, 4);
 
-CREATE TABLE Projects (
-    project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT
-);
+-- Добавляем задания
+INSERT INTO Assignments (title, description, due_date, priority, status, user_id, subject_id) VALUES 
+('Домашняя работа по математике', 'Решить задачи 1-10 из учебника', '2024-12-15 23:59:00', 'high', 'pending', 1, 1),
+('Курсовая по программированию', 'Разработать приложение для учета задач', '2024-12-20 23:59:00', 'medium', 'in progress', 1, 2),
+('Лабораторная по базам данных', 'Спроектировать схему БД для библиотеки', '2024-12-18 23:59:00', 'medium', 'pending', 2, 3),
+('Расчетная работа по физике', 'Решить задачи по механике', '2024-12-14 23:59:00', 'high', 'completed', 2, 4);
 
--- Таблица связи многие-ко-многим между Заданиями и Проектами
-CREATE TABLE Project_Assignments (
-    project_id INTEGER,
-    assignment_id INTEGER,
-    PRIMARY KEY (project_id, assignment_id),
-    FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE CASCADE,
-    FOREIGN KEY (assignment_id) REFERENCES Assignments(assignment_id) ON DELETE CASCADE
-);
+-- Добавляем проекты
+INSERT INTO Projects (name, description, deadline, status) VALUES 
+('Учебный портал', 'Разработка веб-портала для университета', '2024-12-25 23:59:00', 'active'),
+('Научное исследование', 'Исследование алгоритмов машинного обучения', '2024-12-30 23:59:00', 'active'),
+('База данных библиотеки', 'Проектирование и реализация БД для библиотеки', '2024-12-22 23:59:00', 'completed');
 
--- Таблица связи многие-ко-многим между Пользователями и Проектами (члены проектов)
-CREATE TABLE Project_Members (
-    project_id INTEGER,
-    user_id INTEGER,
-    PRIMARY KEY (project_id, user_id),
-    FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
+-- Добавляем участников проектов
+INSERT INTO Project_Members (project_id, user_id, role, permissions) VALUES 
+(1, 1, 'developer', 'read,write'),
+(1, 2, 'designer', 'read,write'),
+(1, 3, 'mentor', 'read,write,admin'),
+(2, 1, 'researcher', 'read,write'),
+(2, 4, 'supervisor', 'read,write,admin'),
+(3, 2, 'architect', 'read,write');
 
-CREATE TABLE Notifications (
-    notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    message TEXT NOT NULL,
-    scheduled_time TEXT NOT NULL,
-    type TEXT CHECK(type IN ('lesson', 'deadline')) NOT NULL,
-    user_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
+-- Связываем задания с проектами
+INSERT INTO Project_Assignments (project_id, assignment_id, assigned_by) VALUES 
+(1, 2, 3),  -- Курсовая по программированию в проекте "Учебный портал"
+(3, 3, 4);  -- Лабораторная по базам данных в проекте "База данных библиотеки"
 
-CREATE TABLE Comments (
-    comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    text TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    user_id INTEGER NOT NULL,
-    assignment_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (assignment_id) REFERENCES Assignments(assignment_id) ON DELETE CASCADE
-);
+-- Добавляем уведомления
+INSERT INTO Notifications (message, scheduled_time, type, user_id) VALUES 
+('Напоминание: Лекция по математике завтра в 9:00', '2024-12-09 18:00:00', 'lesson', 1),
+('Дедлайн: Домашняя работа по математике через 3 дня', '2024-12-12 09:00:00', 'deadline', 1),
+('Напоминание: Практика по программированию завтра в 11:00', '2024-12-10 18:00:00', 'lesson', 2),
+('Дедлайн: Лабораторная по базам данных через 2 дня', '2024-12-16 09:00:00', 'deadline', 2);
 
--- Индексы для оптимизации
-CREATE INDEX idx_assignments_user_id ON Assignments(user_id);
-CREATE INDEX idx_assignments_due_date ON Assignments(due_date);
-CREATE INDEX idx_assignments_status ON Assignments(status);
-CREATE INDEX idx_lessons_datetime ON Lessons(datetime);
-CREATE INDEX idx_lessons_teacher_id ON Lessons(teacher_id);
+-- Добавляем комментарии к заданиям
+INSERT INTO Comments (text, user_id, assignment_id) VALUES 
+('Есть вопросы по задаче №5, не понимаю условие', 1, 1),
+('Посмотрите раздел 2.3 в учебнике, там похожий пример', 3, 1),
+('Какой стек технологий рекомендуется для курсовой?', 1, 2),
+('Предлагаю использовать Python + Django + SQLite', 4, 2),
+('Нужна помощь с проектированием отношений между сущностями', 2, 3),
+('Рекомендую начать с определения основных сущностей предметной области', 3, 3);
