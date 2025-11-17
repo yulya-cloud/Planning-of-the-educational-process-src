@@ -112,19 +112,3 @@ CREATE TABLE Comments (
     FOREIGN KEY (assignment_id) REFERENCES Assignments(assignment_id) ON DELETE CASCADE
 );
 
--- Индексы для оптимизации производительности
-CREATE INDEX idx_users_role ON Users(role);
-CREATE INDEX idx_lessons_datetime ON Lessons(datetime);
-CREATE INDEX idx_lessons_subject_id ON Lessons(subject_id);
-CREATE INDEX idx_lessons_teacher_id ON Lessons(teacher_id);
-CREATE INDEX idx_assignments_user_id ON Assignments(user_id);
-CREATE INDEX idx_assignments_subject_id ON Assignments(subject_id);
-CREATE INDEX idx_assignments_due_date ON Assignments(due_date);
-CREATE INDEX idx_assignments_status ON Assignments(status);
-CREATE INDEX idx_assignments_priority ON Assignments(priority);
-CREATE INDEX idx_project_members_user_id ON Project_Members(user_id);
-CREATE INDEX idx_project_assignments_assignment_id ON Project_Assignments(assignment_id);
-CREATE INDEX idx_notifications_user_id ON Notifications(user_id);
-CREATE INDEX idx_notifications_scheduled_time ON Notifications(scheduled_time);
-CREATE INDEX idx_comments_user_id ON Comments(user_id);
-CREATE INDEX idx_comments_assignment_id ON Comments(assignment_id);
