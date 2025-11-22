@@ -1,0 +1,48 @@
+@startuml Complete_Assignment_Sequence
+actor "Пользователь" as Student
+participant "Интерфейс" as UI
+participant "Контроллер заданий" as AssignmentController
+participant "Сервис заданий" as AssignmentService
+participant "Сервис проектов" as ProjectService
+participant "База данных" as DB
+
+Student -> UI: Нажимает "Выполнено" для задания
+activate Student
+activate UI
+
+UI -> AssignmentController: PATCH /api/assignments/{id}\n{status: "completed"}
+activate AssignmentController
+
+AssignmentController -> AssignmentService: updateAssignmentStatus(assignment_id, "completed")
+activate AssignmentService
+
+AssignmentService -> DB: UPDATE Assignments\nSET status = 'completed'\nWHERE assignment_id = ?
+activate DB
+DB -> AssignmentService: rows_affected
+deactivate DB
+
+AssignmentService -> AssignmentService: checkIfProjectAssignment(assignment_id)
+activate AssignmentService
+
+alt Задание связано с проектом
+    AssignmentService -> ProjectService: updateProjectProgress(assignment_id)
+    activate ProjectService
+    ProjectService -> ProjectService: recalculateProjectCompletion()
+    activate ProjectService
+    ProjectService --> AssignmentService: progress_updated
+    deactivate ProjectService
+    deactivate ProjectService
+end
+
+AssignmentService -> AssignmentController: SuccessResponse()
+deactivate AssignmentService
+
+AssignmentController -> UI: 200 OK
+deactivate AssignmentController
+
+UI -> UI: Визуально отметить задание\n(зеленая галочка, зачеркивание)
+UI -> UI: Обновить статистику выполненных
+UI -> Student: Показать анимацию выполнения
+deactivate UI
+deactivate Student
+@enduml
