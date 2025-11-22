@@ -1,0 +1,52 @@
+@startuml Create_Assignment_Sequence
+actor "Преподаватель" as Teacher
+participant "Интерфейс" as UI
+participant "Контроллер заданий" as AssignmentController
+participant "Сервис заданий" as AssignmentService
+participant "Сервис уведомлений" as NotificationService
+participant "База данных" as DB
+
+Teacher -> UI: Заполняет форму задания\n(название, описание, дедлайн, предмет)
+activate Teacher
+activate UI
+
+UI -> AssignmentController: POST /api/assignments\n{title, description, due_date, subject_id}
+activate AssignmentController
+
+AssignmentController -> AssignmentService: createAssignment(assignmentData)
+activate AssignmentService
+
+AssignmentService -> AssignmentService: validateAssignmentData(assignmentData)
+activate AssignmentService
+
+alt Данные валидны
+    AssignmentService -> DB: INSERT INTO Assignments\n(title, description, due_date, subject_id)
+    activate DB
+    DB -> AssignmentService: assignment_id
+    deactivate DB
+    
+    AssignmentService -> NotificationService: scheduleDeadlineNotification(assignment_id, due_date)
+    activate NotificationService
+    NotificationService --> AssignmentService: notification_scheduled
+    deactivate NotificationService
+    
+    AssignmentService -> AssignmentController: SuccessResponse(assignment_id)
+    deactivate AssignmentService
+    
+    AssignmentController -> UI: 201 Created\n{assignment_id, message}
+    deactivate AssignmentController
+    
+    UI -> UI: Показать уведомление "Задание создано"
+    UI -> UI: Обновить список заданий
+    UI -> Teacher: Отобразить новое задание
+else Данные невалидны
+    AssignmentService -> AssignmentController: ErrorResponse("Неверные данные")
+    deactivate AssignmentService
+    AssignmentController -> UI: 400 Bad Request\n{error_message}
+    deactivate AssignmentController
+    UI -> Teacher: Показать ошибку валидации
+end
+
+deactivate UI
+deactivate Teacher
+@enduml
