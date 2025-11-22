@@ -1,5 +1,5 @@
 @startuml Complete_Assignment_Sequence
-actor "Пользователь" as Student
+actor "Студент" as Student
 participant "Интерфейс" as UI
 participant "Контроллер заданий" as AssignmentController
 participant "Сервис заданий" as AssignmentService
