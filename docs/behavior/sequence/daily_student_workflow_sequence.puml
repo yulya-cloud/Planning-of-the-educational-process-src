@@ -1,0 +1,119 @@
+@startuml Daily_Student_Workflow_Sequence
+actor "Пользователь" as Student
+participant "Интерфейс" as UI
+participant "Контроллер дашборда" as DashboardController
+participant "Сервис заданий" as AssignmentService
+participant "Сервис занятий" as LessonService
+participant "Сервис уведомлений" as NotificationService
+participant "База данных" as DB
+
+== Утренняя проверка ==
+Student -> UI: Открывает приложение
+activate Student
+activate UI
+
+UI -> DashboardController: GET /api/dashboard/daily-overview
+activate DashboardController
+
+DashboardController -> LessonService: getTodaysLessons(user_id)
+activate LessonService
+LessonService -> DB: SELECT * FROM Lessons\nWHERE DATE(datetime) = TODAY()
+activate DB
+DB -> LessonService: todays_lessons
+deactivate DB
+
+alt Занятия есть
+    LessonService -> DashboardController: LessonsResponse(lessons)
+else Занятий нет
+    LessonService -> DashboardController: LessonsResponse(empty_array)
+end
+deactivate LessonService
+
+DashboardController -> AssignmentService: getUpcomingAssignments(user_id)
+activate AssignmentService
+AssignmentService -> DB: SELECT * FROM Assignments\nWHERE due_date <= DATE('now', '+3 days')\nAND status != 'completed'
+activate DB
+DB -> AssignmentService: upcoming_assignments
+deactivate DB
+
+alt Есть задания
+    AssignmentService -> DashboardController: AssignmentsResponse(assignments)
+else Заданий нет
+    AssignmentService -> DashboardController: AssignmentsResponse(empty_array)
+end
+deactivate AssignmentService
+
+DashboardController -> UI: 200 OK\n{lessons, assignments}
+deactivate DashboardController
+
+alt Есть занятия или задания
+    UI -> UI: Отобразить "Сегодня на день"
+    UI -> UI: Показать ближайшие дедлайны
+    UI -> Student: Дашборд с приоритетами
+else Ничего нет
+    UI -> UI: Показать сообщение "На сегодня дел нет"
+    UI -> Student: Пустой дашборд с предложением отдохнуть
+end
+
+== Посещение занятий ==
+loop Для каждого занятия
+    Student -> UI: Отмечает присутствие
+    UI -> LessonService: markAttendance(lesson_id, student_id)
+    activate LessonService
+    LessonService -> DB: INSERT INTO Attendance\n(lesson_id, student_id, status)
+    activate DB
+    DB -> LessonService: attendance_recorded
+    deactivate DB
+    
+    alt Успешное отметка
+        LessonService -> UI: attendance_confirmed
+        UI -> UI: Показать "Присутствие подтверждено"
+    else Ошибка
+        LessonService -> UI: ErrorResponse("Не удалось отметить")
+        UI -> Student: Показать ошибку "Попробуйте снова"
+    end
+    deactivate LessonService
+end
+
+== Работа с заданиями ==
+Student -> UI: Фильтрует задания по предмету
+UI -> AssignmentService: getAssignmentsBySubject(subject_id)
+activate AssignmentService
+AssignmentService -> DB: SELECT * FROM Assignments\nWHERE subject_id = ?\nAND status = 'pending'
+activate DB
+DB -> AssignmentService: subject_assignments
+deactivate DB
+
+alt Задания найдены
+    AssignmentService -> UI: assignments_list
+    UI -> Student: Показать отфильтрованные задания
+else Заданий нет
+    AssignmentService -> UI: empty_list
+    UI -> Student: Показать "По этому предмету заданий нет"
+end
+deactivate AssignmentService
+
+== Вечерняя синхронизация ==
+Student -> UI: Запрашивает обновления
+UI -> NotificationService: checkNewNotifications(user_id)
+activate NotificationService
+NotificationService -> DB: SELECT * FROM Notifications\nWHERE user_id = ?\nAND is_read = 0
+activate DB
+DB -> NotificationService: new_notifications
+deactivate DB
+
+alt Есть уведомления
+    NotificationService -> UI: notifications_list
+    UI -> UI: Показать счетчик уведомлений
+    UI -> UI: Отобразить список новых уведомлений
+    UI -> Student: Обновленный интерфейс с уведомлениями
+else Нет уведомлений
+    NotificationService -> UI: empty_list
+    UI -> UI: Скрыть счетчик уведомлений
+    UI -> Student: Интерфейс без изменений
+end
+deactivate NotificationService
+
+deactivate UI
+deactivate Student
+@enduml
