@@ -1,0 +1,115 @@
+@startuml Daily_Student_Workflow_Sequence
+actor "Студент" as Student
+participant "Интерфейс" as UI
+participant "Контроллер дашборда" as DashboardController
+participant "Сервис заданий" as AssignmentService
+participant "Сервис уведомлений" as NotificationService
+participant "База данных" as DB
+
+== Утренняя проверка ==
+Student -> UI: Открывает приложение
+activate Student
+activate UI
+
+UI -> DashboardController: GET /api/dashboard/daily-overview
+activate DashboardController
+
+DashboardController -> AssignmentService: getUpcomingAssignments(user_id)
+activate AssignmentService
+AssignmentService -> DB: SELECT * FROM Assignments\nWHERE due_date <= DATE('now', '+3 days')\nAND status != 'completed'
+activate DB
+DB -> AssignmentService: upcoming_assignments
+deactivate DB
+
+alt Есть задания
+    AssignmentService -> AssignmentService: calculatePriorityOrder(upcoming_assignments)
+    activate AssignmentService
+    AssignmentService -> DashboardController: AssignmentsResponse(assignments)
+    deactivate AssignmentService
+else Заданий нет
+    AssignmentService -> DashboardController: AssignmentsResponse(empty_array)
+end
+deactivate AssignmentService
+
+DashboardController -> UI: 200 OK\n{assignments}
+deactivate DashboardController
+
+alt Есть задания
+    UI -> UI: Отобразить "Задачи на сегодня"
+    UI -> UI: Подсветить срочные задания
+    UI -> Student: Дашборд с приоритетами
+else Заданий нет
+    UI -> UI: Показать сообщение "На сегодня заданий нет"
+    UI -> Student: Пустой дашборд с предложением отдохнуть
+end
+
+== Работа с заданиями ==
+Student -> UI: Фильтрует задания по предмету
+UI -> AssignmentService: getAssignmentsBySubject(subject_id)
+activate AssignmentService
+AssignmentService -> DB: SELECT * FROM Assignments\nWHERE subject_id = ?\nAND status = 'pending'
+activate DB
+DB -> AssignmentService: subject_assignments
+deactivate DB
+
+alt Задания найдены
+    AssignmentService -> UI: assignments_list
+    UI -> UI: Очистить текущий список
+    UI -> UI: Отобразить отфильтрованные задания
+    UI -> Student: Показать задания выбранного предмета
+else Заданий нет
+    AssignmentService -> UI: empty_list
+    UI -> Student: Показать "По этому предмету заданий нет"
+end
+deactivate AssignmentService
+
+loop Для каждого выполненного задания
+    Student -> UI: Отмечает задание выполненным
+    UI -> AssignmentService: updateAssignmentStatus(assignment_id, "completed")
+    activate AssignmentService
+    AssignmentService -> DB: UPDATE Assignments SET status = 'completed'\nWHERE assignment_id = ?
+    activate DB
+    DB -> AssignmentService: success
+    deactivate DB
+    
+    AssignmentService -> NotificationService: trackAssignmentCompletion(assignment_id)
+    activate NotificationService
+    NotificationService -> DB: UPDATE statistics\nSET completed_count = completed_count + 1
+    activate DB
+    DB -> NotificationService: updated
+    deactivate DB
+    NotificationService --> AssignmentService: tracked
+    deactivate NotificationService
+    
+    AssignmentService -> UI: SuccessResponse()
+    deactivate AssignmentService
+    
+    UI -> UI: Обновить прогресс дня
+    UI -> UI: Визуально отметить задание выполненным
+    UI -> Student: Показать мотивационное сообщение
+end
+
+== Вечерняя синхронизация ==
+Student -> UI: Запрашивает обновления
+UI -> NotificationService: checkNewNotifications(user_id)
+activate NotificationService
+NotificationService -> DB: SELECT * FROM Notifications\nWHERE user_id = ?\nAND is_read = 0
+activate DB
+DB -> NotificationService: new_notifications
+deactivate DB
+
+alt Есть уведомления
+    NotificationService -> UI: notifications_list
+    UI -> UI: Показать счетчик уведомлений
+    UI -> UI: Отобразить список новых уведомлений
+    UI -> Student: Обновленный интерфейс с уведомлениями
+else Нет уведомлений
+    NotificationService -> UI: empty_list
+    UI -> UI: Скрыть счетчик уведомлений
+    UI -> Student: Интерфейс без изменений
+end
+deactivate NotificationService
+
+deactivate UI
+deactivate Student
+@enduml

@@ -1,0 +1,96 @@
+@startuml View_Schedule_Sequence
+actor "Студент" as Student
+actor "Преподаватель" as Teacher
+participant "Интерфейс" as UI
+participant "Контроллер расписания" as ScheduleController
+participant "Сервис занятий" as LessonService
+participant "База данных" as DB
+
+Student -> UI: Открывает раздел "Расписание"
+activate Student
+activate UI
+
+UI -> ScheduleController: GET /api/schedule?view=week&date=2024-12-10
+activate ScheduleController
+
+ScheduleController -> LessonService: getWeeklySchedule(user_id, date)
+activate LessonService
+
+LessonService -> DB: SELECT * FROM Lessons\nWHERE datetime BETWEEN ? AND ?\nORDER BY datetime
+activate DB
+DB -> LessonService: lessons_list
+deactivate DB
+
+LessonService -> LessonService: formatScheduleData(lessons_list)
+activate LessonService
+LessonService -> LessonService: checkForConflicts(lessons_list)
+activate LessonService
+
+alt Найдены занятия
+    LessonService -> ScheduleController: ScheduleResponse(lessons)
+    deactivate LessonService
+    
+    ScheduleController -> UI: 200 OK\n{lessons_array}
+    deactivate ScheduleController
+    
+    UI -> UI: Отрисовать недельное расписание
+    UI -> UI: Подсветить текущие занятия
+    UI -> UI: Показать навигацию по неделям
+    UI -> Student: Отобразить расписание на неделю
+
+else Занятий не найдено
+    LessonService -> ScheduleController: ScheduleResponse(empty_array)
+    deactivate LessonService
+    
+    ScheduleController -> UI: 200 OK\n{empty_lessons_array}
+    deactivate ScheduleController
+    
+    UI -> UI: Показать состояние "Расписание пусто"
+    UI -> Student: Отобразить сообщение "На эту неделю занятий нет"
+
+end
+
+alt Обнаружены конфликты в расписании
+    Note over LessonService: Обнаружены пересекающиеся занятия
+    UI -> UI: Показать предупреждение о конфликтах
+    UI -> Student: Отметить конфликтующие занятия цветом
+    
+else Конфликтов нет
+    Note over LessonService: Расписание корректно
+    UI -> UI: Отрисовать обычное расписание без предупреждений
+end
+
+deactivate UI
+deactivate Student
+
+' Аналогичный сценарий для преподавателя
+Teacher -> UI: Открывает раздел "Расписание"
+activate Teacher
+activate UI
+
+UI -> ScheduleController: GET /api/schedule?view=week&date=2024-12-10
+activate ScheduleController
+
+ScheduleController -> LessonService: getWeeklySchedule(user_id, date)
+activate LessonService
+
+LessonService -> DB: SELECT * FROM Lessons\nWHERE datetime BETWEEN ? AND ?\nORDER BY datetime
+activate DB
+DB -> LessonService: lessons_list
+deactivate DB
+
+LessonService -> LessonService: formatScheduleData(lessons_list)
+activate LessonService
+
+LessonService -> ScheduleController: ScheduleResponse(lessons)
+deactivate LessonService
+
+ScheduleController -> UI: 200 OK\n{lessons_array}
+deactivate ScheduleController
+
+UI -> UI: Отрисовать недельное расписание
+UI -> Teacher: Отобразить расписание на неделю
+
+deactivate UI
+deactivate Teacher
+@enduml
