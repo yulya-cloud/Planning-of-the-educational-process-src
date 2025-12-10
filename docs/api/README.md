@@ -45,9 +45,59 @@ POST /auth/login
   "email": "student@edu.ru",
   "password": "securepass123"
 }
+Успешный ответ (200):
+
+```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_token",
   "user_id": 1,
   "role": "student"
 }
+Ошибка (401):
 
+json
+{
+  "error": "Invalid credentials"
+}
+📚 Получение курсов
+
+Запрос:
+
+http
+GET /courses
+Ответ (200):
+
+json
+{
+  "courses": [
+    {
+      "id": 1,
+      "name": "Математика",
+      "code": "MATH101",
+      "teacher": "Иванов И.И."
+    },
+    {
+      "id": 2,
+      "name": "Программирование",
+      "code": "CS101",
+      "teacher": "Петрова А.С."
+    }
+  ]
+}
+Создание курса - Запрос:
+
+json
+POST /courses
+{
+  "name": "Базы данных",
+  "code": "DB101",
+  "teacher": "Смирнов А.В."
+}
+Создание курса - Ответ (201):
+
+json
+{
+  "course_id": 3,
+  "message": "Course created successfully",
+  "created_at": "2024-12-10T20:45:00Z"
+}
