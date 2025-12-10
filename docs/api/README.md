@@ -45,3 +45,9 @@ POST /auth/login
   "email": "student@edu.ru",
   "password": "securepass123"
 }
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_token",
+  "user_id": 1,
+  "role": "student"
+}
+
