@@ -101,3 +101,36 @@ json
   "message": "Course created successfully",
   "created_at": "2024-12-10T20:45:00Z"
 }
+📝 Создание задания
+
+Запрос:
+
+json
+POST /tasks
+{
+  "title": "Лабораторная по API",
+  "course_id": 1,
+  "due_date": "2024-12-31",
+  "priority": "high",
+  "description": "Выполнить тестирование API с помощью Postman"
+}
+Ответ (201):
+
+json
+{
+  "task_id": 5,
+  "message": "Task created successfully",
+  "created_at": "2024-12-10T20:50:00Z"
+}
+Получение заданий - Запрос:
+
+http
+GET /tasks?course_id=1
+Получение заданий - Ответ (200):
+
+json
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Лабораторная по API",
