@@ -1,0 +1,716 @@
+{
+	"info": {
+		"_postman_id": "59cf9950-a49a-444f-9cf4-673cf4348f5a",
+		"name": "StudyPlanner API",
+		"description": "Коллекция для тестирования API планирования учебного процесса",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50717375",
+		"_collection_link": "https://yulya-cloud-4330460.postman.co/workspace/yulya's-Workspace~276e7d30-545e-4acf-8665-5a2085f36d35/collection/50717375-59cf9950-a49a-444f-9cf4-673cf4348f5a?action=share&source=collection_link&creator=50717375"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student@edu.ru\",\n  \"password\": \"securepass123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"student@edu.ru\",\n  \"password\": \"securepass123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"token\": \"eyJ...mock\",\n  \"user_id\": 1,\n  \"role\": \"student\"\n}"
+						},
+						{
+							"name": "Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"student@edu.ru\",\n  \"password\": \"securepass123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"error\": \"Invalid credentials\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Get All Courses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Проверка статуса",
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Проверка структуры ответа",
+									"pm.test(\"Response has courses array\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.courses).to.be.an('array');",
+									"});",
+									"",
+									"// Проверка структуры первого курса",
+									"pm.test(\"First course has correct structure\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.courses.length > 0) {",
+									"        var firstCourse = jsonData.courses[0];",
+									"        pm.expect(firstCourse).to.have.property('id');",
+									"        pm.expect(firstCourse).to.have.property('name');",
+									"        pm.expect(firstCourse).to.have.property('code');",
+									"        pm.expect(firstCourse.id).to.be.a('number');",
+									"        ",
+									"        // Сохраняем ID первого курса",
+									"        pm.environment.set(\"course_id\", firstCourse.id.toString());",
+									"    }",
+									"});",
+									"",
+									"// Проверка времени ответа",
+									"pm.test(\"Response time is acceptable\", function() {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000); // менее 1 секунды",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"courses"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get All Courses",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/courses",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"courses"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"courses\": [\n    {\n      \"id\": 1,\n      \"name\": \"Математика\",\n      \"code\": \"MATH101\",\n      \"teacher\": \"Иванов И.И.\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Программирование\",\n      \"code\": \"CS101\",\n      \"teacher\": \"Петрова А.С.\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Математика\",\n  \"code\": \"MATH101\",\n  \"difficulty\": \"hard\",\n  \"semester\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"courses"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Course",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Математика\",\n  \"code\": \"MATH101\",\n  \"difficulty\": \"hard\",\n  \"semester\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/courses",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"courses"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"course_id\": 3,\n  \"message\": \"Course created successfully\"\n}"
+						},
+						{
+							"name": "Create Course",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Математика\",\n  \"code\": \"MATH101\",\n  \"difficulty\": \"hard\",\n  \"semester\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/courses",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"courses"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"error\": \"Course name is required\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Get Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks?course_id=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "course_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Tasks",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tasks?course_id=1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "course_id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"tasks\": [\n    {\n      \"id\": 1,\n      \"title\": \"Лабораторная по API\",\n      \"course_id\": 1,\n      \"due_date\": \"2024-12-31\",\n      \"priority\": \"high\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Task creation response\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.task_id).to.be.a('number');",
+									"    pm.expect(jsonData.message).to.include('created');",
+									"    ",
+									"    // Сохраняем ID созданной задачи",
+									"    pm.environment.set(\"task_id\", jsonData.task_id.toString());",
+									"});",
+									"",
+									"pm.test(\"Response has valid timestamp\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.created_at) {",
+									"        pm.expect(jsonData.created_at).to.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Лабораторная по API\",\n  \"course_id\": 1,\n  \"due_date\": \"2024-12-31\",\n  \"priority\": \"high\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Tasks",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Лабораторная по API\",\n  \"course_id\": 1,\n  \"due_date\": \"2024-12-31\",\n  \"priority\": \"high\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"task_id\": 5,\n  \"message\": \"Task created\"\n}"
+						},
+						{
+							"name": "Create Tasks",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Лабораторная по API\",\n  \"course_id\": 1,\n  \"due_date\": \"2024-12-31\",\n  \"priority\": \"high\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"error\": \"Title is required\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Schedule",
+			"item": [
+				{
+					"name": "Get Weekly Schedule",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/schedule/week?week=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule",
+								"week"
+							],
+							"query": [
+								{
+									"key": "week",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Weekly Schedule",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/schedule/week?week=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"schedule",
+										"week"
+									],
+									"query": [
+										{
+											"key": "week",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"week\": 10,\n  \"year\": 2024,\n  \"schedule\": [\n    {\n      \"day\": \"Понедельник\",\n      \"date\": \"2024-03-11\",\n      \"lessons\": [\n        {\n          \"time\": \"09:00-10:30\",\n          \"course\": \"Математика\",\n          \"code\": \"MATH101\",\n          \"room\": \"A-101\"\n        }\n      ]\n    }\n  ]\n}"
+						},
+						{
+							"name": "Get Weekly Schedule",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/schedule/week?week=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"schedule",
+										"week"
+									],
+									"query": [
+										{
+											"key": "week",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"error\": \"Week must be between 1 and 53\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Today Schedule",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/schedule/today",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule",
+								"today"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Today Schedule",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/schedule/today",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"schedule",
+										"today"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"date\": \"2024-03-11\",\n  \"day\": \"Понедельник\",\n  \"lessons\": [\n    {\n      \"time\": \"09:00-10:30\",\n      \"course\": \"Математика\",\n      \"code\": \"MATH101\",\n      \"room\": \"A-101\"\n    }\n  ]\n}"
+						},
+						{
+							"name": "Get Today Schedule",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/schedule/today",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"schedule",
+										"today"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"date\": \"2024-03-12\",\n  \"day\": \"Вторник\",\n  \"lessons\": [],\n  \"message\": \"Сегодня нет занятий\"\n}"
+						},
+						{
+							"name": "Get Today Schedule",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/schedule/today",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"schedule",
+										"today"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n  \"error\": \"Authentication required\",\n  \"code\": \"AUTH_REQUIRED\"\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}
